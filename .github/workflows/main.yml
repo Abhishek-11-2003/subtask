@@ -1,0 +1,31 @@
+name: Comment on Action
+on:
+  workflow_run:
+    workflows:
+      - "Your Workflow Name"
+    types:
+      - completed
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Comment on action
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const workflowRunId = context.payload.workflow_run.id;
+            const repoOwner = context.repo.owner;
+            const repoName = context.repo.repo;
+
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+            await octokit.rest.actions.createOrUpdateWorkflowRunComment({
+              owner: repoOwner,
+              repo: repoName,
+              run_id: workflowRunId,
+              body: "Thank you for running this action!",
+            });
